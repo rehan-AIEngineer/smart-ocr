@@ -1,0 +1,335 @@
+:root {
+    --paper: #faf9f4;
+    --paper-raised: #ffffff;
+    --ink: #1e1c19;
+    --ink-soft: #635d52;
+    --rule: #ddd7c8;
+    --accent: #2c4a6e;
+    --accent-soft: #eaeff4;
+    --error: #a3402a;
+    --error-soft: #f6e8e3;
+    --radius: 3px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 48px 24px 32px;
+}
+
+.masthead {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+}
+
+.masthead h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+}
+
+.tagline {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+}
+
+.workbench {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+@media (max-width: 760px) {
+    .workbench {
+        grid-template-columns: 1fr;
+    }
+}
+
+.pane {
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Upload / preview pane --- */
+
+.dropzone {
+    position: relative;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--paper-raised);
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    overflow: hidden;
+}
+
+.dropzone:hover,
+.dropzone:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.dropzone.is-dragover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.dropzone__empty {
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: system-ui, -apple-system, sans-serif;
+    padding: 24px;
+}
+
+.dropzone__empty svg {
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+}
+
+.dropzone__empty p {
+    margin: 4px 0;
+    font-size: 0.95rem;
+}
+
+.dropzone__empty .hint {
+    font-size: 0.8rem;
+    color: #8a8375;
+}
+
+.preview-img {
+    max-width: 100%;
+    max-height: 420px;
+    display: block;
+    margin: 0 auto;
+}
+
+.lang-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+}
+
+.lang-label {
+    font-weight: 500;
+}
+
+.lang-options {
+    display: inline-flex;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 2px;
+    gap: 2px;
+}
+
+.lang-btn {
+    background: transparent;
+    border: none;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    font-family: inherit;
+    color: var(--ink-soft);
+    border-radius: calc(var(--radius) - 1px);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.lang-btn:hover {
+    color: var(--ink);
+}
+
+.lang-btn.is-active {
+    background: var(--paper-raised);
+    color: var(--accent);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.error-msg {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--error-soft);
+    color: var(--error);
+    border-radius: var(--radius);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.88rem;
+}
+
+/* --- Output pane --- */
+
+.pane--output {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--paper-raised);
+    overflow: hidden;
+}
+
+.pane__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--rule);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+}
+
+.output-area {
+    flex: 1;
+    min-height: 320px;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.output-placeholder {
+    color: #9a9384;
+    font-style: italic;
+    line-height: 1.6;
+}
+
+.output-text {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+}
+
+.output-text[dir="rtl"],
+.output-text.is-urdu {
+    font-family: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "IBM Plex Mono", serif;
+    font-size: 1.05rem;
+    line-height: 2.2;
+    text-align: right;
+    direction: rtl;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink-soft);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.92rem;
+}
+
+.spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--rule);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* --- Buttons --- */
+
+.btn {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.btn--primary {
+    background: var(--accent);
+    color: #fff;
+}
+
+.btn--primary:not(:disabled):hover {
+    background: #23395a;
+}
+
+.btn--ghost {
+    background: transparent;
+    border-color: var(--rule);
+    color: var(--ink);
+}
+
+.btn--ghost:not(:disabled):hover {
+    border-color: var(--ink-soft);
+}
+
+.btn--small {
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    background: transparent;
+    border-color: var(--rule);
+    color: var(--ink);
+}
+
+.btn--small:not(:disabled):hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn--small.is-copied {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* --- Footer --- */
+
+.footnote {
+    margin-top: 28px;
+    color: var(--ink-soft);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.82rem;
+}
+
+.footnote code {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+}

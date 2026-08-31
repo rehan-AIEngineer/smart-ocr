@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scanline &mdash; Text from Images</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+    <div class="page">
+        <header class="masthead">
+            <h1>Scanline</h1>
+            <p class="tagline">Turn a photo of text into text you can use.</p>
+        </header>
+
+        <main class="workbench">
+            <!-- Left: upload / preview -->
+            <section class="pane pane--input" aria-label="Image upload">
+                <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Upload an image">
+                    <div id="dropzone-empty" class="dropzone__empty">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.4">
+                            <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        <p>Drop an image here, or click to browse</p>
+                        <p class="hint">JPG, PNG, or WebP up to 10 MB</p>
+                    </div>
+                    <img id="preview-img" class="preview-img" alt="Uploaded preview" hidden />
+                </div>
+                <input id="file-input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
+
+                <!-- Output language selector -->
+                <div class="lang-selector" role="group" aria-label="Output Language">
+                    <span class="lang-label">Output:</span>
+                    <div class="lang-options">
+                        <button type="button" class="lang-btn is-active" data-lang="" title="Keep original language without translating">Original</button>
+                        <button type="button" class="lang-btn" data-lang="english" title="Translate extracted text to English">English</button>
+                        <button type="button" class="lang-btn" data-lang="urdu" title="Translate extracted text to Urdu">اردو (Urdu)</button>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button id="extract-btn" class="btn btn--primary" disabled>Extract text</button>
+                    <button id="reset-btn" class="btn btn--ghost" disabled>Clear</button>
+                </div>
+
+                <p id="error-msg" class="error-msg" role="alert" hidden></p>
+            </section>
+
+            <!-- Right: extracted text -->
+            <section class="pane pane--output" aria-label="Extracted text">
+                <div class="pane__header">
+                    <span>Transcript</span>
+                    <button id="copy-btn" class="btn btn--small" disabled>Copy text</button>
+                </div>
+
+                <div id="output-area" class="output-area">
+                    <p id="output-placeholder" class="output-placeholder">
+                        Your extracted text will appear here after you upload an image and click
+                        &ldquo;Extract text.&rdquo;
+                    </p>
+                    <pre id="output-text" class="output-text" hidden></pre>
+                    <div id="loading" class="loading" hidden>
+                        <span class="spinner" aria-hidden="true"></span>
+                        Reading the image&hellip;
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footnote">
+            <p>Text is transcribed exactly as it appears. Unclear handwriting is marked <code>[illegible]</code> rather
+                than guessed.</p>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
