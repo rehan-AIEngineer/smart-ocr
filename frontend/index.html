@@ -4,82 +4,193 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scanline &mdash; Text from Images</title>
+    <title>Scanline &mdash; AI Vision OCR & Document Scanner</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-        href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="/static/style.css" />
 </head>
 
 <body>
-    <div class="page">
-        <header class="masthead">
-            <h1>Scanline</h1>
-            <p class="tagline">Turn a photo of text into text you can use.</p>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
+                        <line x1="7" y1="12" x2="17" y2="12" stroke-linecap="round" />
+                        <line x1="7" y1="8" x2="13" y2="8" stroke-linecap="round" />
+                        <line x1="7" y1="16" x2="15" y2="16" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <div class="brand-title-wrap">
+                        <span class="brand-name">Scanline</span>
+                        <span class="badge badge--ai">Gemini Vision</span>
+                    </div>
+                    <span class="brand-subtitle">Instant handwritten & printed document OCR</span>
+                </div>
+            </div>
+            <div class="nav-status">
+                <span class="status-dot"></span>
+                <span>System Ready</span>
+            </div>
         </header>
 
+        <!-- Main Workspace -->
         <main class="workbench">
-            <!-- Left: upload / preview -->
-            <section class="pane pane--input" aria-label="Image upload">
+            <!-- Left Pane: Upload & Capture -->
+            <section class="card pane-input" aria-label="Image upload and capture">
+                <div class="card-header">
+                    <span class="card-title">Document Source</span>
+                    <span id="file-info" class="file-info" hidden></span>
+                </div>
+
+                <!-- Dropzone -->
                 <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Upload an image">
-                    <div id="dropzone-empty" class="dropzone__empty">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="1.4">
-                            <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
-                        <p>Drop an image here, or click to browse</p>
-                        <p class="hint">JPG, PNG, or WebP up to 10 MB</p>
+                    <div id="dropzone-empty" class="dropzone-empty">
+                        <div class="upload-icon-bubble">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-linecap="round" stroke-linejoin="round" />
+                                <polyline points="17 8 12 3 7 8" stroke-linecap="round" stroke-linejoin="round" />
+                                <line x1="12" y1="3" x2="12" y2="15" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <p class="dropzone-primary-text">Drag & drop your document here</p>
+                        <p class="dropzone-secondary-text">or choose an option below</p>
+                        <div class="dropzone-actions" onclick="event.stopPropagation()">
+                            <button type="button" id="browse-btn" class="btn btn--secondary btn--sm">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                Browse Files
+                            </button>
+                            <button type="button" id="camera-btn" class="btn btn--camera btn--sm">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                    <circle cx="12" cy="13" r="4"/>
+                                </svg>
+                                Take Photo
+                            </button>
+                        </div>
+                        <span class="file-types-hint">Supports JPG, PNG, WebP up to 10 MB</span>
                     </div>
-                    <img id="preview-img" class="preview-img" alt="Uploaded preview" hidden />
+
+                    <!-- Image Preview Area -->
+                    <div id="preview-container" class="preview-container" hidden>
+                        <img id="preview-img" class="preview-img" alt="Captured document preview" />
+                        <button type="button" id="change-img-btn" class="preview-overlay-btn" title="Change image">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6 6 18M6 6l12 12" />
+                            </svg>
+                            Remove
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Hidden Native Inputs -->
                 <input id="file-input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
+                <input id="camera-input" type="file" accept="image/*" capture="environment" hidden />
 
-                <!-- Output language selector -->
-                <div class="lang-selector" role="group" aria-label="Output Language">
-                    <span class="lang-label">Output:</span>
-                    <div class="lang-options">
-                        <button type="button" class="lang-btn is-active" data-lang="" title="Keep original language without translating">Original</button>
-                        <button type="button" class="lang-btn" data-lang="english" title="Translate extracted text to English">English</button>
-                        <button type="button" class="lang-btn" data-lang="urdu" title="Translate extracted text to Urdu">اردو (Urdu)</button>
+                <!-- Language Mode Selector -->
+                <div class="lang-section">
+                    <span class="lang-title">Translation Mode</span>
+                    <div class="lang-segmented-control" role="group" aria-label="Select Language">
+                        <button type="button" class="lang-pill is-active" data-lang="" title="Extract verbatim in original script">
+                            <span>🌐</span> Original
+                        </button>
+                        <button type="button" class="lang-pill" data-lang="english" title="Translate transcript to English">
+                            <span>🇬🇧</span> English
+                        </button>
+                        <button type="button" class="lang-pill" data-lang="urdu" title="Translate transcript to Urdu">
+                            <span>🇵🇰</span> اردو
+                        </button>
                     </div>
                 </div>
 
-                <div class="actions">
-                    <button id="extract-btn" class="btn btn--primary" disabled>Extract text</button>
-                    <button id="reset-btn" class="btn btn--ghost" disabled>Clear</button>
+                <!-- Action Controls -->
+                <div class="controls-row">
+                    <button id="extract-btn" class="btn btn--primary btn--lg" disabled>
+                        <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+                        </svg>
+                        <span>Extract Text</span>
+                    </button>
+                    <button id="reset-btn" class="btn btn--ghost" disabled title="Reset and clear">
+                        Clear
+                    </button>
                 </div>
 
-                <p id="error-msg" class="error-msg" role="alert" hidden></p>
+                <!-- Error Box -->
+                <div id="error-msg" class="error-banner" role="alert" hidden>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span id="error-text"></span>
+                </div>
             </section>
 
-            <!-- Right: extracted text -->
-            <section class="pane pane--output" aria-label="Extracted text">
-                <div class="pane__header">
-                    <span>Transcript</span>
-                    <button id="copy-btn" class="btn btn--small" disabled>Copy text</button>
+            <!-- Right Pane: Extracted Output -->
+            <section class="card pane-output" aria-label="Extracted text transcript">
+                <div class="card-header">
+                    <div class="output-header-left">
+                        <span class="card-title">Extracted Transcript</span>
+                        <span id="stats-badge" class="stats-badge" hidden>0 words</span>
+                    </div>
+                    <button id="copy-btn" class="btn btn--copy btn--sm" disabled>
+                        <svg class="copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                        </svg>
+                        <span id="copy-btn-text">Copy Text</span>
+                    </button>
                 </div>
 
                 <div id="output-area" class="output-area">
-                    <p id="output-placeholder" class="output-placeholder">
-                        Your extracted text will appear here after you upload an image and click
-                        &ldquo;Extract text.&rdquo;
-                    </p>
-                    <pre id="output-text" class="output-text" hidden></pre>
-                    <div id="loading" class="loading" hidden>
-                        <span class="spinner" aria-hidden="true"></span>
-                        Reading the image&hellip;
+                    <!-- Placeholder State -->
+                    <div id="output-placeholder" class="output-empty-state">
+                        <div class="empty-icon-bubble">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                        </div>
+                        <h3>No text extracted yet</h3>
+                        <p>Upload a picture or snap a photo from your camera, then click <strong>Extract Text</strong>.</p>
                     </div>
+
+                    <!-- Loading State -->
+                    <div id="loading" class="loading-state" hidden>
+                        <div class="pulse-ring">
+                            <div class="spinner-core"></div>
+                        </div>
+                        <div class="loading-content">
+                            <p class="loading-title">AI is reading the document&hellip;</p>
+                            <span class="loading-subtitle">Transcribing handwriting and formatting layout</span>
+                        </div>
+                    </div>
+
+                    <!-- Text Result -->
+                    <pre id="output-text" class="output-text" hidden></pre>
                 </div>
             </section>
         </main>
 
-        <footer class="footnote">
-            <p>Text is transcribed exactly as it appears. Unclear handwriting is marked <code>[illegible]</code> rather
-                than guessed.</p>
+        <!-- Footer -->
+        <footer class="footer">
+            <p>
+                Transcribed verbatim with AI vision. Unclear handwriting is marked <code>[illegible]</code> rather than guessed.
+            </p>
         </footer>
     </div>
 

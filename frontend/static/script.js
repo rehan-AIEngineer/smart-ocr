@@ -1,49 +1,71 @@
+// DOM Elements
 const dropzone = document.getElementById("dropzone");
 const dropzoneEmpty = document.getElementById("dropzone-empty");
+const previewContainer = document.getElementById("preview-container");
 const previewImg = document.getElementById("preview-img");
+const changeImgBtn = document.getElementById("change-img-btn");
+const fileInfo = document.getElementById("file-info");
+
 const fileInput = document.getElementById("file-input");
+const cameraInput = document.getElementById("camera-input");
+const browseBtn = document.getElementById("browse-btn");
+const cameraBtn = document.getElementById("camera-btn");
 
 const extractBtn = document.getElementById("extract-btn");
 const resetBtn = document.getElementById("reset-btn");
 const copyBtn = document.getElementById("copy-btn");
+const copyBtnText = document.getElementById("copy-btn-text");
 
 const outputPlaceholder = document.getElementById("output-placeholder");
 const outputText = document.getElementById("output-text");
 const loadingEl = document.getElementById("loading");
+const statsBadge = document.getElementById("stats-badge");
+
 const errorMsg = document.getElementById("error-msg");
+const errorText = document.getElementById("error-text");
 
-const langButtons = document.querySelectorAll(".lang-btn");
+const langPills = document.querySelectorAll(".lang-pill");
 
+// Config
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const MAX_SIZE_MB = 10;
 
 let selectedFile = null;
 let selectedLanguage = ""; // Default: Original language (no translation)
 
-// ---------------------------------------------------------------------
-// Language selector handling
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Native Camera & File Browsing Triggers
+// ---------------------------------------------------------------------------
 
-langButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-        langButtons.forEach((b) => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        selectedLanguage = btn.dataset.lang || "";
-    });
+browseBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fileInput.click();
 });
 
-// ---------------------------------------------------------------------
-// File selection (click, drag-and-drop, file input)
-// ---------------------------------------------------------------------
+cameraBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    cameraInput.click();
+});
 
-dropzone.addEventListener("click", () => fileInput.click());
+dropzone.addEventListener("click", () => {
+    if (!selectedFile) {
+        fileInput.click();
+    }
+});
+
 dropzone.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
+    if ((e.key === "Enter" || e.key === " ") && !selectedFile) {
         e.preventDefault();
         fileInput.click();
     }
 });
 
+changeImgBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    resetFile();
+});
+
+// Drag & Drop
 ["dragenter", "dragover"].forEach((evt) =>
     dropzone.addEventListener(evt, (e) => {
         e.preventDefault();
@@ -63,43 +85,85 @@ dropzone.addEventListener("drop", (e) => {
     if (file) handleFile(file);
 });
 
+// File Input Listeners
 fileInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (file) handleFile(file);
 });
 
+cameraInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
+});
+
+// ---------------------------------------------------------------------------
+// File Handling & Preview
+// ---------------------------------------------------------------------------
+
 function handleFile(file) {
     hideError();
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-        showError("Please upload a JPG, PNG, or WebP image.");
+        showError("Unsupported format. Please upload a JPG, PNG, or WebP image.");
         return;
     }
 
     const sizeMb = file.size / (1024 * 1024);
     if (sizeMb > MAX_SIZE_MB) {
-        showError(`File is too large (${sizeMb.toFixed(1)} MB). Max size is ${MAX_SIZE_MB} MB.`);
+        showError(`File is too large (${sizeMb.toFixed(1)} MB). Max limit is ${MAX_SIZE_MB} MB.`);
         return;
     }
 
     selectedFile = file;
 
+    // Display image preview
     const reader = new FileReader();
     reader.onload = (e) => {
         previewImg.src = e.target.result;
-        previewImg.hidden = false;
+        previewContainer.hidden = false;
         dropzoneEmpty.hidden = true;
     };
     reader.readAsDataURL(file);
+
+    // Show file info in header
+    fileInfo.textContent = `${file.name || "camera-photo.jpg"} (${sizeMb.toFixed(1)} MB)`;
+    fileInfo.hidden = false;
 
     extractBtn.disabled = false;
     resetBtn.disabled = false;
     resetOutput();
 }
 
-// ---------------------------------------------------------------------
-// Extract text
-// ---------------------------------------------------------------------
+function resetFile() {
+    selectedFile = null;
+    fileInput.value = "";
+    cameraInput.value = "";
+    previewImg.src = "";
+    previewContainer.hidden = true;
+    dropzoneEmpty.hidden = false;
+    fileInfo.hidden = true;
+    fileInfo.textContent = "";
+    extractBtn.disabled = true;
+    resetBtn.disabled = true;
+    hideError();
+    resetOutput();
+}
+
+// ---------------------------------------------------------------------------
+// Language Selection (Pill Buttons)
+// ---------------------------------------------------------------------------
+
+langPills.forEach((pill) => {
+    pill.addEventListener("click", () => {
+        langPills.forEach((p) => p.classList.remove("is-active"));
+        pill.classList.add("is-active");
+        selectedLanguage = pill.dataset.lang || "";
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Extract Text Action
+// ---------------------------------------------------------------------------
 
 extractBtn.addEventListener("click", async () => {
     if (!selectedFile) return;
@@ -122,12 +186,12 @@ extractBtn.addEventListener("click", async () => {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.detail || "Something went wrong while extracting text.");
+            throw new Error(data.detail || "Something went wrong while processing the image.");
         }
 
         showOutput(data.extracted_text);
     } catch (err) {
-        showError(err.message || "Could not reach the server. Is the backend running?");
+        showError(err.message || "Could not reach the OCR server. Please try again.");
     } finally {
         setLoading(false);
     }
@@ -139,6 +203,7 @@ function setLoading(isLoading) {
     if (isLoading) {
         outputPlaceholder.hidden = true;
         outputText.hidden = true;
+        statsBadge.hidden = true;
     }
 }
 
@@ -152,7 +217,7 @@ function showOutput(text) {
     outputText.hidden = false;
     outputText.textContent = text;
 
-    // Apply RTL and Urdu typography if target is Urdu or text contains Urdu/Arabic script
+    // Apply RTL and Urdu typography if target is Urdu or text contains Urdu script
     if (selectedLanguage === "urdu" || hasUrduArabic(text)) {
         outputText.setAttribute("dir", "rtl");
         outputText.classList.add("is-urdu");
@@ -160,6 +225,12 @@ function showOutput(text) {
         outputText.setAttribute("dir", "ltr");
         outputText.classList.remove("is-urdu");
     }
+
+    // Calculate word & character stats
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const chars = text.length;
+    statsBadge.textContent = `${words} words · ${chars} chars`;
+    statsBadge.hidden = false;
 
     copyBtn.disabled = false;
 }
@@ -170,66 +241,59 @@ function resetOutput() {
     outputText.setAttribute("dir", "ltr");
     outputText.classList.remove("is-urdu");
     outputPlaceholder.hidden = false;
+    statsBadge.hidden = true;
+    statsBadge.textContent = "";
     copyBtn.disabled = true;
     copyBtn.classList.remove("is-copied");
-    copyBtn.textContent = "Copy text";
+    copyBtnText.textContent = "Copy Text";
 }
 
-// ---------------------------------------------------------------------
-// Copy
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Copy to Clipboard
+// ---------------------------------------------------------------------------
 
 copyBtn.addEventListener("click", async () => {
     try {
         await navigator.clipboard.writeText(outputText.textContent);
-        copyBtn.textContent = "Copied";
+        copyBtnText.textContent = "Copied! ✓";
         copyBtn.classList.add("is-copied");
         setTimeout(() => {
-            copyBtn.textContent = "Copy text";
+            copyBtnText.textContent = "Copy Text";
             copyBtn.classList.remove("is-copied");
-        }, 1500);
+        }, 1800);
     } catch {
-        showError("Could not copy automatically. Please select and copy the text manually.");
+        showError("Could not copy automatically. Please copy the text manually.");
     }
 });
 
-// ---------------------------------------------------------------------
-// Reset
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Global Reset
+// ---------------------------------------------------------------------------
 
 resetBtn.addEventListener("click", () => {
-    selectedFile = null;
-    fileInput.value = "";
-    previewImg.src = "";
-    previewImg.hidden = true;
-    dropzoneEmpty.hidden = false;
-    extractBtn.disabled = true;
-    resetBtn.disabled = true;
+    resetFile();
 
     // Reset language toggle to "Original"
     selectedLanguage = "";
-    langButtons.forEach((b) => {
-        if (!b.dataset.lang) {
-            b.classList.add("is-active");
+    langPills.forEach((p) => {
+        if (!p.dataset.lang) {
+            p.classList.add("is-active");
         } else {
-            b.classList.remove("is-active");
+            p.classList.remove("is-active");
         }
     });
-
-    hideError();
-    resetOutput();
 });
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Errors
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 
 function showError(message) {
-    errorMsg.textContent = message;
+    errorText.textContent = message;
     errorMsg.hidden = false;
 }
 
 function hideError() {
     errorMsg.hidden = true;
-    errorMsg.textContent = "";
+    errorText.textContent = "";
 }
