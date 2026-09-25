@@ -97,6 +97,22 @@
                 <input id="file-input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden />
                 <input id="camera-input" type="file" accept="image/*" capture="environment" hidden />
 
+                <!-- Language Mode Selector -->
+                <div class="lang-section">
+                    <span class="lang-title">Translation Mode</span>
+                    <div class="lang-segmented-control" role="group" aria-label="Select Language">
+                        <button type="button" class="lang-pill is-active" data-lang="" title="Extract verbatim in original script">
+                            <span>🌐</span> Original
+                        </button>
+                        <button type="button" class="lang-pill" data-lang="english" title="Translate transcript to English">
+                            <span>🇬🇧</span> English
+                        </button>
+                        <button type="button" class="lang-pill" data-lang="urdu" title="Translate transcript to Urdu">
+                            <span>🇵🇰</span> اردو
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Action Controls -->
                 <div class="controls-row">
                     <button id="extract-btn" class="btn btn--primary btn--lg" disabled>
