@@ -28,7 +28,7 @@ const langPills = document.querySelectorAll(".lang-pill");
 
 // Config
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-const MAX_SIZE_MB = 10;
+const MAX_SIZE_MB = 15;
 
 let selectedFile = null;
 let selectedLanguage = ""; // Default: Original language (no translation)
@@ -97,10 +97,74 @@ cameraInput.addEventListener("change", (e) => {
 });
 
 // ---------------------------------------------------------------------------
+// Client-Side Fast Image Optimizer / Compressor
+// ---------------------------------------------------------------------------
+
+async function compressImage(file, maxDimension = 1800, quality = 0.85) {
+    // If file is already small (< 350 KB), skip re-encoding
+    if (file.size < 350 * 1024 && file.type === "image/jpeg") {
+        return file;
+    }
+
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                // Scale down high-res mobile photos while preserving text sharpness
+                if (width > maxDimension || height > maxDimension) {
+                    if (width > height) {
+                        height = Math.round((height * maxDimension) / width);
+                        width = maxDimension;
+                    } else {
+                        width = Math.round((width * maxDimension) / height);
+                        height = maxDimension;
+                    }
+                }
+
+                const canvas = document.createElement("canvas");
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext("2d");
+                // Fill white background for transparent images
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(0, 0, width, height);
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob || blob.size >= file.size) {
+                            resolve(file);
+                        } else {
+                            const optimizedFile = new File(
+                                [blob],
+                                (file.name || "photo.jpg").replace(/\.[^/.]+$/, "") + ".jpg",
+                                { type: "image/jpeg", lastModified: Date.now() }
+                            );
+                            resolve(optimizedFile);
+                        }
+                    },
+                    "image/jpeg",
+                    quality
+                );
+            };
+            img.onerror = () => resolve(file);
+            img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(file);
+        reader.readAsDataURL(file);
+    });
+}
+
+// ---------------------------------------------------------------------------
 // File Handling & Preview
 // ---------------------------------------------------------------------------
 
-function handleFile(file) {
+async function handleFile(file) {
     hideError();
 
     if (!ALLOWED_TYPES.includes(file.type)) {
@@ -108,25 +172,29 @@ function handleFile(file) {
         return;
     }
 
-    const sizeMb = file.size / (1024 * 1024);
-    if (sizeMb > MAX_SIZE_MB) {
-        showError(`File is too large (${sizeMb.toFixed(1)} MB). Max limit is ${MAX_SIZE_MB} MB.`);
+    const originalSizeMb = file.size / (1024 * 1024);
+    if (originalSizeMb > MAX_SIZE_MB) {
+        showError(`File is too large (${originalSizeMb.toFixed(1)} MB). Max limit is ${MAX_SIZE_MB} MB.`);
         return;
     }
 
-    selectedFile = file;
+    // Instant local preview
+    const previewUrl = URL.createObjectURL(file);
+    previewImg.src = previewUrl;
+    previewContainer.hidden = false;
+    dropzoneEmpty.hidden = true;
 
-    // Display image preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        previewImg.src = e.target.result;
-        previewContainer.hidden = false;
-        dropzoneEmpty.hidden = true;
-    };
-    reader.readAsDataURL(file);
+    // Fast client-side image compression in background
+    const processedFile = await compressImage(file);
+    selectedFile = processedFile;
+
+    const processedSizeKb = Math.round(processedFile.size / 1024);
+    const sizeDisplay = processedSizeKb > 1024 
+        ? `${(processedSizeKb / 1024).toFixed(1)} MB` 
+        : `${processedSizeKb} KB`;
 
     // Show file info in header
-    fileInfo.textContent = `${file.name || "camera-photo.jpg"} (${sizeMb.toFixed(1)} MB)`;
+    fileInfo.textContent = `${file.name || "camera-photo.jpg"} (${sizeDisplay} • Ready)`;
     fileInfo.hidden = false;
 
     extractBtn.disabled = false;
